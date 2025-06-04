@@ -1,51 +1,52 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import "./Home.css";
 import "./AdvancedSearch.css";
 
-
-
 function AdvancedSearch() {
-    const [ingredients, setIngredients] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [areas, setAreas] = useState([]);
+    const [departments, setDepartments] = useState([]);
+    const [selectedDepartment, setSelectedDepartment] = useState("");
+    const [selectedPeriod, setSelectedPeriod] = useState("");
+    const [selectedArtist, setSelectedArtist] = useState("");
 
-    const [selectedIngredient, setSelectedIngredient] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("");
-    const [selectedArea, setSelectedArea] = useState("");
-
-    const [meals, setMeals] = useState([]);
+    const [artworks, setArtworks] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        fetch("https://www.themealdb.com/api/json/v1/1/list.php?i=list")
+        fetch("https://collectionapi.metmuseum.org/public/collection/v1/departments")
             .then(res => res.json())
-            .then(data => setIngredients(data.meals || []));
-
-        fetch("https://www.themealdb.com/api/json/v1/1/list.php?c=list")
-            .then(res => res.json())
-            .then(data => setCategories(data.meals || []));
-
-        fetch("https://www.themealdb.com/api/json/v1/1/list.php?a=list")
-            .then(res => res.json())
-            .then(data => setAreas(data.meals || []));
+            .then(data => setDepartments(data.departments));
     }, []);
 
     const handleSearch = () => {
-        let url = "";
+        if (!selectedDepartment) return;
 
-        if (selectedIngredient) {
-            url = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${selectedIngredient}`;
-        } else if (selectedCategory) {
-            url = `https://www.themealdb.com/api/json/v1/1/filter.php?c=${selectedCategory}`;
-        } else if (selectedArea) {
-            url = `https://www.themealdb.com/api/json/v1/1/filter.php?a=${selectedArea}`;
-        } else {
-        return;
-        }
-
-        fetch(url)
+        setLoading(true);
+        fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects?departmentIds=${selectedDepartment}`)
             .then(res => res.json())
-            .then(data => setMeals(data.meals || []));
+            .then(data => {
+                const ids = data.objectIDs?.slice(0, 100) || [];
+                const fetchDetails = ids.map(id =>
+                    fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`).then(res => res.json())
+                );
+
+                Promise.all(fetchDetails).then(objects => {
+                    let filtered = objects.filter(obj => obj.primaryImageSmall);
+
+                    if (selectedPeriod) {
+                        const year = parseInt(selectedPeriod);
+                        filtered = filtered.filter(obj => obj.objectBeginDate <= year && obj.objectEndDate >= year);
+                    }
+
+                    if (selectedArtist) {
+                        filtered = filtered.filter(obj =>
+                            obj.artistDisplayName.toLowerCase().includes(selectedArtist.toLowerCase())
+                        );
+                    }
+
+                    setArtworks(filtered.slice(0, 20));
+                    setLoading(false);
+                });
+            });
     };
 
     return (
@@ -53,50 +54,45 @@ function AdvancedSearch() {
             <h2 className="titre">Recherche avancée</h2>
 
             <div className="selecteurs">
-                <select onChange={(e) => setSelectedIngredient(e.target.value)} className="monSelecteur">
-                    <option value="">-- Ingrédient --</option>
-                    {ingredients.map((ing) => (
-                        <option key={ing.strIngredient} value={ing.strIngredient}>
-                        {ing.strIngredient}
-                        </option>
+                <select onChange={(e) => setSelectedDepartment(e.target.value)} className="monSelecteur">
+                    <option value="">-- Département --</option>
+                    {departments.map(dep => (
+                        <option key={dep.departmentId} value={dep.departmentId}>{dep.displayName}</option>
                     ))}
                 </select>
 
-                <select onChange={(e) => setSelectedCategory(e.target.value)} className="monSelecteur">
-                    <option value="">-- Catégorie --</option>
-                    {categories.map((cat) => (
-                        <option key={cat.strCategory} value={cat.strCategory}>
-                        {cat.strCategory}
-                        </option>
-                    ))}
-                </select>
+                <input
+                    type="number"
+                    placeholder="Année (ex : 1500)"
+                    className="monSelecteur"
+                    onChange={(e) => setSelectedPeriod(e.target.value)}
+                />
 
-                <select onChange={(e) => setSelectedArea(e.target.value)} className="monSelecteur">
-                    <option value="">-- Zone géographique --</option>
-                    {areas.map((area) => (
-                        <option key={area.strArea} value={area.strArea}>
-                        {area.strArea}
-                        </option>
-                    ))}
-                </select>
+                <input
+                    type="text"
+                    placeholder="Nom de l'artiste"
+                    className="monSelecteur"
+                    onChange={(e) => setSelectedArtist(e.target.value)}
+                />
 
                 <button onClick={handleSearch} className="monBouton">Rechercher</button>
             </div>
 
-            <div>
-                {meals.length === 0 ? (
-                <p>Aucune recette trouvée.</p>
-                ) : (
+            {loading ? (
+                <p>Chargement des œuvres...</p>
+            ) : artworks.length === 0 ? (
+                <p>Aucune œuvre trouvée.</p>
+            ) : (
                 <div className="mealCards">
-                    {meals.map((meal) => (
-                    <Link to={`/recipe/${meal.idMeal}`} className="card">
-                        <h4>{meal.strMeal}</h4>
-                        <img src={meal.strMealThumb} alt={meal.strMeal} width="100%" />
-                    </Link>
+                    {artworks.map((art) => (
+                        <div className="card" key={art.objectID}>
+                            <h4>{art.title}</h4>
+                            <img src={art.primaryImageSmall} alt={art.title} />
+                            <p>{art.artistDisplayName || "Artiste inconnu"}</p>
+                        </div>
                     ))}
                 </div>
-                )}
-            </div>
+            )}
         </div>
     );
 }

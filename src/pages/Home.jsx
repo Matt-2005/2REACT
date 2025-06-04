@@ -1,40 +1,60 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import "./Home.css";
 
 function Home() {
-    const [categories, setCategories] = useState([]);
+    const [artworks, setArtworks] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-    fetch("https://www.themealdb.com/api/json/v1/1/categories.php")
-        .then((res) => res.json())
-        .then((data) => {
-        setCategories(data.categories || []);
-        setLoading(false);
-        });
+        fetch("https://collectionapi.metmuseum.org/public/collection/v1/objects")
+            .then((res) => res.json())
+            .then((data) => {
+                const ids = data.objectIDs.slice(0, 50);
+                const fetchDetails = ids.map((id) =>
+                    fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`).then((res) => res.json())
+                );
+                Promise.all(fetchDetails).then((objects) => {
+                    const withImages = objects.filter(obj => obj.primaryImageSmall);
+                    setArtworks(withImages.slice(0, 12));
+                    setLoading(false);
+                });
+            });
     }, []);
 
     return (
-    <div className="bigDiv">
-        <h1 className="titre"> Bienvenue sur <span style={{ background: "linear-gradient(to right, #f1871b, #d74921)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontWeight: "900"}}>SUPMEAL</span></h1>
+        <div className="bigDiv">
+            <h1 className="titre">
+                Bienvenue sur{" "}
+                <span
+                    style={{
+                        background: "linear-gradient(to right, #f1871b, #d74921)",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        fontWeight: "900",
+                    }}
+                >
+                    SUPMEAL
+                </span>
+            </h1>
 
-        <p className="texte">Explorez des centaines de recettes du monde entier !</p>
+            <p className="texte">Découvrez des œuvres d’art du Met Museum !</p>
 
-        <h2 className="sousTitre">Catégories populaires :</h2>
-        {loading ? (
-            <p>Chargement des catégories...</p>
-        ) : (
-        <div className="mealCards">
-            {categories.map((cat) => (
-            <div className="card">
-                <img src={cat.strCategoryThumb} alt={cat.strCategory} />
-                <h3>{cat.strCategory}</h3>
-                <p>{cat.strCategoryDescription.slice(0, 80)}...</p>
-            </div>
-            ))}
+            <h2 className="sousTitre">Sélection du musée :</h2>
+            {loading ? (
+                <p>Chargement des œuvres...</p>
+            ) : (
+                <div className="mealCards">
+                    {artworks.map((art) => (
+                        <Link to={`/artwork/${art.objectID}`} className="card" key={art.objectID}>
+                            <img src={art.primaryImageSmall} alt={art.title} />
+                            <h3>{art.title}</h3>
+                            <p>{art.artistDisplayName || "Artiste inconnu"}</p>
+                        </Link>
+                    ))}
+                </div>
+            )}
         </div>
-        )}
-    </div>
     );
 }
 

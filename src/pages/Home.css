@@ -3,11 +3,9 @@
     flex-direction: column;
     align-items: center;
     height: 100%;
-
     border-radius: 25px;
     padding: 25px 0;
 }
-
 
 .titre {
     font-size: 50px;
@@ -18,7 +16,8 @@
 
 .texte {
     margin: 0;
-    margin-top: 10px;margin-bottom: 25px;
+    margin-top: 10px;
+    margin-bottom: 25px;
     font-weight: 200;
     color: white;
 }
@@ -26,7 +25,6 @@
 .sousTitre {
     color: white;
 }
-
 
 .mealCards {
     display: flex;
@@ -49,13 +47,29 @@
     transition: 0.2s ease-in-out;
     text-decoration: none;
     color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
-
 
 .mealCards .card:hover {
     scale: 1.02;
 }
+
 .mealCards .card img {
     width: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+    margin-bottom: 10px;
 }
 
+.mealCards .card h3 {
+    font-size: 20px;
+    margin: 10px 0 5px 0;
+}
+
+.mealCards .card p {
+    font-size: 14px;
+    font-weight: 200;
+}
