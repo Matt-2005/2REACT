@@ -12,10 +12,6 @@ function SearchBar() {
         const value = e.target.value;
         setQuery(value);
 
-        if (value.trim() === "") {
-            setResults([]);
-            return;
-        }
 
         setLoading(true);
         fetch(`https://collectionapi.metmuseum.org/public/collection/v1/search?q=${value}&hasImages=true`)

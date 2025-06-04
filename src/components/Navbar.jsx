@@ -12,9 +12,6 @@ function Navbar() {
                 <Link to="/" className="nav-link">
                     Accueil
                 </Link>
-                <Link to="/recettes" className="nav-link">
-                    Recettes
-                </Link>
                 <Link to="/recherche-avancee" className="nav-link">
                     Recherche avancée
                 </Link>

@@ -1,23 +1,24 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar";
 import Home from "./pages/Home";
-import Recipies from "./pages/10Recipies";
 import AdvancedSearch from "./pages/AdvancedSearch";
-import RecipePage from "./pages/RecipePage";
+import OeuvreDetails from "./pages/OeuvreDetails";
+import "./App.css"; // Assure-toi d'importer ton CSS global
 
 function App() {
   return (
-    <Router>
-      <div style={{ padding: "25px", backgroundImage: 'url("/background.jpeg")', backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: '25px'}}>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/recettes" element={<Recipies/>} />
-          <Route path="/recherche-avancee" element={<AdvancedSearch/>} />
-          <Route path="/artwork/:id" element={<RecipePage />} />
-        </Routes>
-      </div>
-    </Router>
+    <>
+      <Router>
+        <div className="app-container">
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/recherche-avancee" element={<AdvancedSearch />} />
+            <Route path="/artwork/:id" element={<OeuvreDetails />} />
+          </Routes>
+        </div>
+      </Router>
+    </>
   );
 }
 

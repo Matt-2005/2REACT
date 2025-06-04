@@ -7,7 +7,7 @@ function Home() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("https://collectionapi.metmuseum.org/public/collection/v1/objects")
+        fetch("https://collectionapi.metmuseum.org/public/collection/v1/search?isHighlight=true&hasImages=true&q=*")
             .then((res) => res.json())
             .then((data) => {
                 const ids = data.objectIDs.slice(0, 50);
@@ -28,13 +28,10 @@ function Home() {
                 Bienvenue sur{" "}
                 <span
                     style={{
-                        background: "linear-gradient(to right, #f1871b, #d74921)",
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                        fontWeight: "900",
+                        color: "#eb032a",
                     }}
                 >
-                    SUPMEAL
+                    The Met Museum Explorer
                 </span>
             </h1>
 
